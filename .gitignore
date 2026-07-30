@@ -1,0 +1,8 @@
+config/service_auth.json
+config/runtime_credentials.json
+config/lists_sync_config.toml
+config/session_alexa.json
+alexa-cookie-cli/
+**venv**
+__pycache__/
+logs/

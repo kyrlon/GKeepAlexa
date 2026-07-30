@@ -1,0 +1,3 @@
+gkeepapi
+tomli; python_version < "3.11"
+pyalexalist @ git+https://github.com/kyrlon/pyalexalist.git@main

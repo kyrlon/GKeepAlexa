@@ -1,0 +1,9 @@
+{
+    "google": {
+        "username": "your@gmail.com",
+        "oauth_token": "your_oauth_token_here"
+    },
+    "alexa": {
+        "refresh_token": "your_alexa_refresh_token_here"
+    }
+}
