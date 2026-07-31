@@ -38,6 +38,15 @@ ALEXA_COOKIE_EXPIRY_RETRIES  = _s.get("alexa", {}).get("cookie_expiry_retries", 
 ALEXA_RETRY_INTERVAL_SECONDS = _s.get("alexa", {}).get("retry_interval_seconds", 30)
 ALEXA_AMAZON_DOMAIN          = _s.get("alexa", {}).get("amazon_domain", "amazon.com")
 
+_SYNC_INTERVAL_FLOOR = 5
+if SYNC_INTERVAL_SECONDS < _SYNC_INTERVAL_FLOOR:
+    import warnings
+    warnings.warn(
+        f"sync_interval_seconds={SYNC_INTERVAL_SECONDS} is below the minimum of {_SYNC_INTERVAL_FLOOR}s — clamping to {_SYNC_INTERVAL_FLOOR}s",
+        stacklevel=1,
+    )
+    SYNC_INTERVAL_SECONDS = _SYNC_INTERVAL_FLOOR
+
 
 class UpdateLists:
     """Orchestrates the bidirectional sync loop between Google Keep and Alexa lists."""
