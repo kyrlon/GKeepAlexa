@@ -1,6 +1,6 @@
 # GkeepAlexa
 
-Bidirectional synchronization between Google Keep checklists and Amazon Alexa lists, written in Python.
+Bidirectional synchronization between Google Keep checklists and Amazon Alexa lists written in Python.
 
 > **Disclaimer:** All product and company names or logos are trademarks™ or registered® trademarks of their respective holders. Use of them does not imply any affiliation with or endorsement by them or any associated subsidiaries. This is a personal project maintained in spare time and has no business goal. GOOGLE KEEP is a trademark of Google LLC. ALEXA is a trademark of AMAZON TECHNOLOGIES, INC.
 
@@ -8,7 +8,7 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Demo
 
-<!-- demo GIF or video goes here -->
+![Demo](assets/demo.gif)
 
 ## Installation
 
@@ -68,7 +68,7 @@ This reads `google.oauth_token` from `config/service_auth.json`, exchanges it fo
 
 Alexa access uses session cookies obtained by signing in through a proxy login flow.
 
-> **Note:** The full credential setup steps are also documented in [`pyalexalist/README.md`](pyalexalist/README.md), which covers usage of the module directly.
+> **Note:** The full credential setup steps are also documented in the [pyalexalist README](https://github.com/kyrlon/pyalexalist), which covers usage of the module directly.
 
 > **Note:** GkeepAlexa passes `config/service_auth.json` (relative to `GKeepAlexa.py`) to pyalexalist, which derives `config/runtime_credentials.json` from the same directory — so the working directory you launch from does not matter.
 
@@ -141,20 +141,21 @@ Edit `config/lists_sync_config.toml` to set which lists to sync and control sync
 # === Sync Settings ===
 
 [settings]
-clear_on_startup       = true   # clear checked items from all lists when the process starts
-clear_hourly           = true   # clear checked items from all lists every clear_interval_seconds
-clear_interval_seconds = 3600   # how often (in seconds) to clear checked items
-max_iterations         = 0      # max sync cycles to run; 0 = run indefinitely
-sync_interval_seconds  = 20     # seconds to wait between sync iterations (recommended: 20+, floor: 5)
+clear_on_startup       = true   # clear checked items from all lists when the process starts (default: true)
+clear_on_interval      = true   # clear checked items from all lists every clear_interval_seconds (default: true)
+clear_interval_seconds = 3600   # how often (in seconds) to clear checked items (default: 3600)
+max_iterations         = 0      # max sync cycles to run; 0 = run indefinitely (default: 0)
+sync_interval_seconds  = 20     # seconds to wait between sync iterations (default: 20, recommended: 20+, floor: 5)
 
-log_to_console         = true   # print log output to the terminal
-log_to_file            = true   # write log output to logs/gkeepalexa.log
-log_level              = "INFO" # console verbosity: DEBUG, INFO, WARNING, ERROR
+log_to_console         = true   # print log output to the terminal (default: true)
+log_to_file            = true   # write log output to logs/gkeepalexa.log (default: true)
+log_level              = "INFO" # console verbosity: DEBUG, INFO, WARNING, ERROR (default: INFO)
 
 [settings.gkeep]
-pinned_only = true              # true = only sync pinned Google Keep notes; false = sync all notes
-sort        = "none"            # item sort order applied to all lists — takes effect next iteration
-                                # az, za, newest, oldest, none
+pinned_only             = true   # true = only sync pinned Google Keep notes; false = sync all notes (default: true)
+sort                    = "none" # item sort order applied to all lists — takes effect next iteration (default: none)
+                                 # az, za, newest, oldest, none
+normalize_quantity_text = true   # rewrite GKeep text to normalized form e.g. 'gum x10003' → 'gum x999' (default: true)
 
 # === List Sync Configuration ===
 
@@ -163,7 +164,7 @@ name     = "Groceries"                 # friendly label used in logs and per-lis
 category = "shopping"                  # your own label — does not affect sync behaviour
 gkeep    = "Groceries/Shopping List"   # exact title of the Google Keep checklist note
 alexa    = "SHOP"                      # exact name of the Alexa list
-enabled  = true
+enabled  = true                        # set false to pause without removing the entry (default: true)
 # gkeep_sort = "az"                    # optional — overrides [settings.gkeep] sort for this list only
 
 [[lists]]
@@ -171,10 +172,10 @@ name     = "Daily Tasks"
 category = "todo"
 gkeep    = "TODO#Alexa"
 alexa    = "TODO"
-enabled  = false                       # set false to pause without removing the entry
+enabled  = false
 ```
 
-Add a `[[lists]]` block for each GKeep ↔ Alexa pair you want to sync.
+Add a `[[lists]]` block for each GKeep ↔ Alexa pair you want to sync. Alexa has two built-in default lists: `SHOP` (shopping list, supports quantity) and `TODO` (to-do list, no quantity support). Custom Alexa lists are also supported.
 
 **Sort order:** this setting applies only to the Google Keep side. Alexa clients (Alexa app, Echo Show, etc.) already provide native ways to display a list alphabetically or by date added. Google Keep does not have an equivalent automatic sort for checklist items; items remain in the order they were added or last manually rearranged.
 When a sort order is selected, the app reorders the items within the Google Keep note after every sync. This keeps the note consistently sorted regardless of when the items were originally added.
@@ -189,7 +190,7 @@ The `sort` key under `[settings.gkeep]` sets a default order applied to all list
 | `newest` | newest → oldest (by last-updated timestamp) |
 | `none` | no sort applied (default) |
 
-**Quantity support:** Alexa shopping lists support a native quantity field; Alexa to-do lists (named `TODO`) do not. Quantity is automatically enabled or disabled based on the Alexa list name — no extra configuration needed.
+**Quantity support:** Alexa's default shopping list (`SHOP`) supports a native quantity field; the default to-do list (`TODO`) does not. Quantity is automatically enabled or disabled based on the Alexa list name — no extra configuration needed.
 
 **Google Keep note type:** only checklist notes (notes with checkboxes) are synced. Google Keep supports several note types — plain text, drawings, images, and checklists — but only checklist notes are recognised by this tool. All other types are silently skipped, even if they are pinned. Make sure the Google Keep note you point `gkeep` at is in checklist format (the checkbox list mode, not a plain text note).
 

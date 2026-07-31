@@ -24,14 +24,14 @@ with open(_CONFIG_PATH, "rb") as _f:
 
 _s = _config.get("settings", {})
 CLEAR_ON_STARTUP       = _s.get("clear_on_startup", True)
-CLEAR_HOURLY           = _s.get("clear_hourly", True)
+CLEAR_ON_INTERVAL      = _s.get("clear_on_interval", True)
 CLEAR_INTERVAL_SECONDS = _s.get("clear_interval_seconds", 3600)
 MAX_ITERATIONS         = _s.get("max_iterations", 0)
 SYNC_INTERVAL_SECONDS  = _s.get("sync_interval_seconds", 20)
 GKEEP_PINNED_ONLY              = _s.get("gkeep", {}).get("pinned_only", True)
 LIST_PAIRS                     = [p for p in _config["lists"] if p.get("enabled", True)]
-GKEEP_DEFAULT_SORT             = _s.get("gkeep", {}).get("sort", "none")
-GKEEP_SORT_MAP                 = {lst["gkeep"]:lst.get("gkeep_sort", GKEEP_DEFAULT_SORT) for lst in LIST_PAIRS}
+GKEEP_DEFAULT_SORT             = _s.get("gkeep", {}).get("sort", "none").casefold()
+GKEEP_SORT_MAP                 = {lst["gkeep"]:lst.get("gkeep_sort", GKEEP_DEFAULT_SORT).casefold() for lst in LIST_PAIRS}
 GKEEP_NORMALIZE_QUANTITY_TEXT  = _s.get("gkeep", {}).get("normalize_quantity_text", True)
 LOG_MAX_BYTES                = _s.get("log_max_bytes", 5 * 1024 * 1024)
 LOG_BACKUP_COUNT             = _s.get("log_backup_count", 3)
@@ -87,7 +87,7 @@ class UpdateLists:
                         self.Alexa.clearDoneCompleted(pair["alexa"])
                         self.googleKeep.clearDoneCompleted(pair["gkeep"])
 
-                if CLEAR_HOURLY and time.time() > t0_ + CLEAR_INTERVAL_SECONDS:
+                if CLEAR_ON_INTERVAL and time.time() > t0_ + CLEAR_INTERVAL_SECONDS:
                     for pair in LIST_PAIRS:
                         self.Alexa.clearDoneCompleted(pair["alexa"])
                         self.googleKeep.clearDoneCompleted(pair["gkeep"])

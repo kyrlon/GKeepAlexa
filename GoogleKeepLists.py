@@ -25,7 +25,8 @@ class GoogleKeepLists:
         self._normalize_quantity_text = normalize_quantity_text
         if self.sort_map:
             for list_name, order in self.sort_map.items():
-                logger.info("GKeep sort enabled: %s → %s", list_name, self._sort_labels.get(order, order))
+                if order != "none":
+                    logger.info("GKeep sort enabled: %s → %s", list_name, self._sort_labels.get(order, order))
         self.gKeepLogin()
 
     def gKeepLogin(self) -> None:

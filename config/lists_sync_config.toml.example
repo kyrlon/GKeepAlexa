@@ -1,42 +1,44 @@
 # === Sync Settings ===
 
 [settings]
-clear_on_startup       = true   # clear checked items from all lists when the process starts
-clear_hourly           = true   # clear checked items from all lists every clear_interval_seconds
-clear_interval_seconds = 3600   # how often (in seconds) to clear checked items
-max_iterations         = 0      # max sync cycles to run; 0 = run indefinitely
-sync_interval_seconds  = 20     # seconds to wait between sync iterations (recommended: 20+, floor: 5)
+clear_on_startup       = true   # clear checked items from all lists when the process starts (default: true)
+clear_on_interval      = true   # clear checked items from all lists every clear_interval_seconds (default: true)
+clear_interval_seconds = 3600   # how often (in seconds) to clear checked items (default: 3600)
+max_iterations         = 0      # max sync cycles to run; 0 = run indefinitely (default: 0)
+sync_interval_seconds  = 20     # seconds to wait between sync iterations (default: 20, recommended: 20+, floor: 5)
 
-log_to_console         = true   # print log output to the terminal
-log_to_file            = true   # write log output to logs/gkeepalexa.log
-log_level              = "INFO"  # console verbosity: DEBUG, INFO, WARNING, ERROR
-log_file_level         = "DEBUG" # file verbosity: DEBUG, INFO, WARNING, ERROR
-log_max_bytes          = 5242880 # max log file size in bytes before rotation (default: 5 MB)
-log_backup_count       = 3       # number of rotated log files to keep
+log_to_console         = true   # print log output to the terminal (default: true)
+log_to_file            = true   # write log output to logs/gkeepalexa.log (default: true)
+log_level              = "INFO"  # console verbosity: DEBUG, INFO, WARNING, ERROR (default: INFO)
+log_file_level         = "DEBUG" # file verbosity: DEBUG, INFO, WARNING, ERROR (default: DEBUG)
+log_max_bytes          = 5242880 # max log file size in bytes before rotation (default: 5242880 / 5 MB)
+log_backup_count       = 3       # number of rotated log files to keep (default: 3)
 
 [settings.alexa]
-amazon_domain          = "amazon.com"  # amazon.co.uk, amazon.de, amazon.fr, amazon.it, amazon.es,
+amazon_domain          = "amazon.com"  # default: amazon.com — other supported values:
+                                       # amazon.co.uk, amazon.de, amazon.fr, amazon.it, amazon.es,
                                        # amazon.co.jp, amazon.ca, amazon.com.au, amazon.in,
                                        # amazon.com.br, amazon.com.mx
-cookie_expiry_retries  = 0   # operation retries after cookie expiration (0 = raise immediately)
-retry_interval_seconds = 30  # seconds to wait between retries while user refreshes cookies
+cookie_expiry_retries  = 0   # operation retries after cookie expiration (default: 0 — raise immediately)
+retry_interval_seconds = 30  # seconds to wait between retries while user refreshes cookies (default: 30)
 
 [settings.gkeep]
-pinned_only             = true   # true = only sync pinned Google Keep notes; false = sync all notes
-sort                    = "none" # item sort order applied to all lists — takes effect next iteration
+pinned_only             = true   # true = only sync pinned Google Keep notes; false = sync all notes (default: true)
+sort                    = "none" # item sort order applied to all lists — takes effect next iteration (default: none)
                                  # az, za, newest, oldest, none
-normalize_quantity_text = true   # true = rewrite GKeep text to normalized form (e.g. 'gum x10003' → 'gum x999')
+normalize_quantity_text = true   # true = rewrite GKeep text to normalized form e.g. 'gum x10003' → 'gum x999' (default: true)
                                  # false = leave GKeep text as typed; quantity still clamped internally
 
 # === List Sync Configuration ===
 # Add one [[lists]] block per GKeep ↔ Alexa pair you want to sync.
+# Alexa has two built-in default lists: SHOP (shopping, supports quantity) and TODO (to-do, no quantity).
 
 [[lists]]
 name     = "Groceries"               # friendly label used in logs
 category = "shopping"                # your own label — does not affect sync behaviour
 gkeep    = "My GKeep List Name"      # exact title of the Google Keep checklist note
-alexa    = "MY ALEXA LIST"           # exact name of the Alexa list
-enabled  = true
+alexa    = "SHOP"                    # default Alexa shopping list — supports quantity
+enabled  = true                        # set false to pause without removing the entry (default: true)
 # gkeep_sort = "az"                  # optional — overrides [settings.gkeep] sort for this list only
                                      # az, za, newest, oldest, none
 
@@ -44,6 +46,6 @@ enabled  = true
 name     = "Daily Tasks"
 category = "todo"
 gkeep    = "Another GKeep List"
-alexa    = "ANOTHER ALEXA LIST"
+alexa    = "TODO"                    # default Alexa to-do list — quantity not supported
 enabled  = false                     # set false to pause without removing the entry
 # gkeep_sort = "oldest"
