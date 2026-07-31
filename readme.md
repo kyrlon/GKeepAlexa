@@ -145,7 +145,7 @@ clear_on_startup       = true   # clear checked items from all lists when the pr
 clear_hourly           = true   # clear checked items from all lists every clear_interval_seconds
 clear_interval_seconds = 3600   # how often (in seconds) to clear checked items
 max_iterations         = 0      # max sync cycles to run; 0 = run indefinitely
-sync_interval_seconds  = 10     # seconds to wait between sync iterations (minimum: 5)
+sync_interval_seconds  = 20     # seconds to wait between sync iterations (recommended: 20+, floor: 5)
 
 log_to_console         = true   # print log output to the terminal
 log_to_file            = true   # write log output to logs/gkeepalexa.log

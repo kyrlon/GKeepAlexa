@@ -1,7 +1,10 @@
 
+import logging
 import random
 import datetime
 import re
+
+logger = logging.getLogger(__name__)
 
 _QTY_SUFFIX_X     = re.compile(r'^(.+?)\s*[×xX*]\s*(\d+)$')   # Potatoes ×4, Potatoes x4, Potatoes * 4
 _QTY_PREFIX_X     = re.compile(r'^(\d+)\s*[×xX*]\s*(.+)$')    # 4x Potatoes, 4 * Potatoes
@@ -404,7 +407,11 @@ class ListItem(Element):
     @quantity.setter
     def quantity(self, value: "int | None"):
         v = int(value) if value is not None else None
-        self._quantity = v if v and v > 1 else None
+        if v == 0:
+            logger.info("Quantity 0 on '%s' — treating as no quantity", self._itemName)
+        elif v and v > 999:
+            logger.info("Quantity %d exceeds maximum of 999 for '%s' — clamping to 999", v, self._itemName)
+        self._quantity = min(v, 999) if v and v > 1 else None
 
     @staticmethod
     def parse_quantity(text: str) -> "tuple[str, int | None]":
