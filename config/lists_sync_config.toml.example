@@ -22,9 +22,11 @@ cookie_expiry_retries  = 0   # operation retries after cookie expiration (0 = ra
 retry_interval_seconds = 30  # seconds to wait between retries while user refreshes cookies
 
 [settings.gkeep]
-pinned_only = true              # true = only sync pinned Google Keep notes; false = sync all notes
-sort        = "none"            # item sort order applied to all lists — takes effect next iteration
-                                # az, za, newest, oldest, none
+pinned_only             = true   # true = only sync pinned Google Keep notes; false = sync all notes
+sort                    = "none" # item sort order applied to all lists — takes effect next iteration
+                                 # az, za, newest, oldest, none
+normalize_quantity_text = true   # true = rewrite GKeep text to normalized form (e.g. 'gum x10003' → 'gum x999')
+                                 # false = leave GKeep text as typed; quantity still clamped internally
 
 # === List Sync Configuration ===
 # Add one [[lists]] block per GKeep ↔ Alexa pair you want to sync.

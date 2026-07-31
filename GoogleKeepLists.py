@@ -14,7 +14,7 @@ class GoogleKeepLists:
 
     _sort_labels = {"az": "A → Z", "za": "Z → A", "oldest": "oldest → newest", "newest": "newest → oldest"}
 
-    def __init__(self, pinned_only: bool = False, sort_map: "dict[str, str] | None" = None) -> None:
+    def __init__(self, pinned_only: bool = False, sort_map: "dict[str, str] | None" = None, normalize_quantity_text: bool = True) -> None:
         self.searched_keep_notes = {}
         self.credential_path = Path(__file__).parent / "config" / "runtime_credentials.json"
         self.lists_and_items = {}
@@ -22,6 +22,7 @@ class GoogleKeepLists:
         self.children_to_update = []
         self.pinned_only = pinned_only
         self.sort_map = sort_map or {}
+        self._normalize_quantity_text = normalize_quantity_text
         if self.sort_map:
             for list_name, order in self.sort_map.items():
                 logger.info("GKeep sort enabled: %s → %s", list_name, self._sort_labels.get(order, order))
@@ -314,9 +315,24 @@ class GoogleKeepLists:
             for citem in self.children_to_update:
                 self.updateListEntry(list_name, citem)
             self.children_to_update.clear()
+        if self._normalize_quantity_text:
+            self._correct_quantity_text(list_name)
         self._sort_note(list_name)
         self.gKeepSync()
         
+    def _correct_quantity_text(self, list_name: str) -> None:
+        """Rewrite any GKeep item whose raw text doesn't match the normalized itemText (e.g. 'gum x10003' → 'gum x999')."""
+        gnote = self.searched_keep_notes.get(list_name)
+        if not gnote:
+            return
+        for item in self.lists_and_items[list_name].items:
+            if not item.internalId:
+                continue
+            gnote_item = next((i for i in gnote.items if i.id == item.internalId), None)
+            if gnote_item and gnote_item.text != item.itemText:
+                logger.info("GKeep text correction '%s' → '%s' in %s", gnote_item.text, item.itemText, list_name)
+                gnote_item.text = item.itemText
+
     def _sort_note(self, list_name: str) -> None:
         """Apply the configured sort order to the GKeep note for list_name and sync, if any."""
         if not self.sort_map:

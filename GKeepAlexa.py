@@ -28,10 +28,11 @@ CLEAR_HOURLY           = _s.get("clear_hourly", True)
 CLEAR_INTERVAL_SECONDS = _s.get("clear_interval_seconds", 3600)
 MAX_ITERATIONS         = _s.get("max_iterations", 0)
 SYNC_INTERVAL_SECONDS  = _s.get("sync_interval_seconds", 20)
-GKEEP_PINNED_ONLY      = _s.get("gkeep", {}).get("pinned_only", True)
-LIST_PAIRS             = [p for p in _config["lists"] if p.get("enabled", True)]
-GKEEP_DEFAULT_SORT     = _s.get("gkeep", {}).get("sort", "none")
-GKEEP_SORT_MAP         = {lst["gkeep"]:lst.get("gkeep_sort", GKEEP_DEFAULT_SORT) for lst in LIST_PAIRS}
+GKEEP_PINNED_ONLY              = _s.get("gkeep", {}).get("pinned_only", True)
+LIST_PAIRS                     = [p for p in _config["lists"] if p.get("enabled", True)]
+GKEEP_DEFAULT_SORT             = _s.get("gkeep", {}).get("sort", "none")
+GKEEP_SORT_MAP                 = {lst["gkeep"]:lst.get("gkeep_sort", GKEEP_DEFAULT_SORT) for lst in LIST_PAIRS}
+GKEEP_NORMALIZE_QUANTITY_TEXT  = _s.get("gkeep", {}).get("normalize_quantity_text", True)
 LOG_MAX_BYTES                = _s.get("log_max_bytes", 5 * 1024 * 1024)
 LOG_BACKUP_COUNT             = _s.get("log_backup_count", 3)
 ALEXA_COOKIE_EXPIRY_RETRIES  = _s.get("alexa", {}).get("cookie_expiry_retries", 0)
@@ -52,7 +53,7 @@ class UpdateLists:
     """Orchestrates the bidirectional sync loop between Google Keep and Alexa lists."""
 
     def __init__(self) -> None:
-        self.googleKeep = GoogleKeepLists(pinned_only=GKEEP_PINNED_ONLY, sort_map=GKEEP_SORT_MAP)
+        self.googleKeep = GoogleKeepLists(pinned_only=GKEEP_PINNED_ONLY, sort_map=GKEEP_SORT_MAP, normalize_quantity_text=GKEEP_NORMALIZE_QUANTITY_TEXT)
         self.Alexa = AlexaLists(cookie_expiry_retries=ALEXA_COOKIE_EXPIRY_RETRIES, retry_interval_seconds=ALEXA_RETRY_INTERVAL_SECONDS, amazon_domain=ALEXA_AMAZON_DOMAIN, service_auth_path=_SERVICE_AUTH_PATH)
         self.googleKeep.getCurrentListsItems(resync=True)
         self.Alexa.getCurrentListsItems()
