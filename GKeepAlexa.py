@@ -1,4 +1,6 @@
+import atexit
 import logging
+import os
 import time, timeit
 try:
     import tomllib
@@ -18,6 +20,26 @@ logger = logging.getLogger(__name__)
 
 _CONFIG_PATH       = Path(__file__).parent / "config" / "lists_sync_config.toml"
 _SERVICE_AUTH_PATH = Path(__file__).parent / "config" / "service_auth.json"
+_LOCK_FILE         = Path(__file__).parent / "gkeepalexa.pid"
+
+
+def _acquire_lock() -> None:
+    if _LOCK_FILE.exists():
+        try:
+            pid = int(_LOCK_FILE.read_text().strip())
+            os.kill(pid, 0)
+            raise SystemExit(
+                f"ERROR: Another GKeepAlexa instance appears to be running (PID {pid}).\n"
+                f"       If this is stale, delete: {_LOCK_FILE}"
+            )
+        except (OSError, ValueError):
+            pass  # stale lock — process gone or file unreadable
+    _LOCK_FILE.write_text(str(os.getpid()))
+    atexit.register(_release_lock)
+
+
+def _release_lock() -> None:
+    _LOCK_FILE.unlink(missing_ok=True)
 
 with open(_CONFIG_PATH, "rb") as _f:
     _config = tomllib.load(_f)
@@ -311,6 +333,7 @@ class UpdateLists:
 
 
 if __name__ == "__main__":
+    _acquire_lock()
     import logging as _logging
     from logger_setup import setupLogging
     setupLogging(

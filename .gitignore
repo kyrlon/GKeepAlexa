@@ -6,3 +6,4 @@ alexa-cookie-cli/
 **venv**
 __pycache__/
 logs/
+gkeepalexa.pid
