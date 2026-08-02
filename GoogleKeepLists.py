@@ -26,7 +26,7 @@ class GoogleKeepLists:
         if self.sort_map:
             for list_name, order in self.sort_map.items():
                 if order != "none":
-                    logger.info("GKeep sort enabled: %s → %s", list_name, self._sort_labels.get(order, order))
+                    logger.info("GKeep sort enabled: %s: %s", list_name, self._sort_labels.get(order, order))
         self.gKeepLogin()
 
     def gKeepLogin(self) -> None:
