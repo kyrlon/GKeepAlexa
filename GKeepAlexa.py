@@ -34,7 +34,7 @@ GKEEP_DEFAULT_SORT             = _s.get("gkeep", {}).get("sort", "none").casefol
 GKEEP_SORT_MAP                 = {lst["gkeep"]:lst.get("gkeep_sort", GKEEP_DEFAULT_SORT).casefold() for lst in LIST_PAIRS}
 GKEEP_NORMALIZE_QUANTITY_TEXT  = _s.get("gkeep", {}).get("normalize_quantity_text", True)
 LOG_MAX_BYTES                = _s.get("log_max_bytes", 5 * 1024 * 1024)
-LOG_BACKUP_COUNT             = _s.get("log_backup_count", 3)
+LOG_BACKUP_COUNT             = _s.get("log_backup_count", 5)
 ALEXA_COOKIE_EXPIRY_RETRIES  = _s.get("alexa", {}).get("cookie_expiry_retries", 0)
 ALEXA_RETRY_INTERVAL_SECONDS = _s.get("alexa", {}).get("retry_interval_seconds", 30)
 ALEXA_AMAZON_DOMAIN          = _s.get("alexa", {}).get("amazon_domain", "amazon.com")
@@ -79,6 +79,8 @@ class UpdateLists:
                         a_list = deepcopy(self.Alexa.lists_and_items[pair["alexa"]])
                         g_list = deepcopy(self.googleKeep.lists_and_items[pair["gkeep"]])
                         self.syncBins(a_list, g_list, self.is_first_loop)
+                        logger.debug("[%s] item counts after syncBins — GKeep: %d, Alexa: %d",
+                                     pair.get("name", pair["gkeep"]), len(g_list.items), len(a_list.items))
                         self.googleKeep.syncList(g_list)
                         self.Alexa.syncList(a_list)
 
@@ -142,7 +144,10 @@ class UpdateLists:
                     _new_item.updatedTime = gkeep_item.updatedTime
                     _new_item.resolvedTime = gkeep_item.updatedTime
                     _new_item.indented = gkeep_item.indented
-                    alexa_bin.add(_new_item)
+                    if any(i.itemIdentityKey == _new_item.itemIdentityKey for i in alexa_bin.items):
+                        logger.warning("[DUPLICATE SKIPPED] '%s' already in Alexa bin — not copying from GKeep", _new_item.itemName)
+                    else:
+                        alexa_bin.add(_new_item)
                 elif not gkeep_item and alexa_item:
                     alexa_item.id = ListItem.generateId()
                     _new_item = ListItem()
@@ -155,7 +160,10 @@ class UpdateLists:
                     _new_item.updatedTime = alexa_item.updatedTime
                     _new_item.resolvedTime = alexa_item.updatedTime
                     _new_item.indented = alexa_item.indented
-                    gkeep_bin.add(_new_item)
+                    if any(i.itemIdentityKey == _new_item.itemIdentityKey for i in gkeep_bin.items):
+                        logger.warning("[DUPLICATE SKIPPED] '%s' already in GKeep bin — not copying from Alexa", _new_item.itemName)
+                    else:
+                        gkeep_bin.add(_new_item)
                 elif alexa_item and gkeep_item:
                     alexa_item.id = gkeep_item.id = ListItem.generateId()
                     if not alexa_item == gkeep_item:
@@ -202,7 +210,10 @@ class UpdateLists:
                     _new_item.resolvedTime = gkeep_item.updatedTime
                     _new_item.parentItemName = gkeep_item.parentItemName
                     _new_item.indented = gkeep_item.indented
-                    alexa_bin.add(_new_item)
+                    if any(i.itemIdentityKey == _new_item.itemIdentityKey for i in alexa_bin.items):
+                        logger.warning("[DUPLICATE SKIPPED] '%s' already in Alexa bin (ID: %s) — not copying from GKeep", _new_item.itemName, item_id)
+                    else:
+                        alexa_bin.add(_new_item)
                 elif not gkeep_item and alexa_item:
                     _new_item = ListItem()
                     _new_item.itemName = alexa_item.itemName
@@ -213,7 +224,10 @@ class UpdateLists:
                     _new_item.resolvedTime = alexa_item.updatedTime
                     _new_item.parentItemName = alexa_item.parentItemName
                     _new_item.indented = alexa_item.indented
-                    gkeep_bin.add(_new_item)
+                    if any(i.itemIdentityKey == _new_item.itemIdentityKey for i in gkeep_bin.items):
+                        logger.warning("[DUPLICATE SKIPPED] '%s' already in GKeep bin (ID: %s) — not copying from Alexa", _new_item.itemName, item_id)
+                    else:
+                        gkeep_bin.add(_new_item)
                 elif alexa_item and gkeep_item:
                     if not alexa_item == gkeep_item:
                         a_t = alexa_item.updatedTime
@@ -270,7 +284,7 @@ if __name__ == "__main__":
         console_level=getattr(_logging, _s.get("log_level", "INFO").upper(), _logging.INFO),
         file_level=getattr(_logging, _s.get("log_file_level", "DEBUG").upper(), _logging.DEBUG),
         max_bytes=_s.get("log_max_bytes", 5 * 1024 * 1024),
-        backup_count=_s.get("log_backup_count", 3),
+        backup_count=_s.get("log_backup_count", 5),
     )
     obj = UpdateLists()
     try:

@@ -12,7 +12,7 @@ log_to_file            = true   # write log output to logs/gkeepalexa.log (defau
 log_level              = "INFO"  # console verbosity: DEBUG, INFO, WARNING, ERROR (default: INFO)
 log_file_level         = "DEBUG" # file verbosity: DEBUG, INFO, WARNING, ERROR (default: DEBUG)
 log_max_bytes          = 5242880 # max log file size in bytes before rotation (default: 5242880 / 5 MB)
-log_backup_count       = 3       # number of rotated log files to keep (default: 3)
+log_backup_count       = 5       # number of rotated log files to keep (default: 5)
 
 [settings.alexa]
 amazon_domain          = "amazon.com"  # default: amazon.com — other supported values:
