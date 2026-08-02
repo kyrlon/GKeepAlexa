@@ -38,6 +38,7 @@ LOG_BACKUP_COUNT             = _s.get("log_backup_count", 5)
 ALEXA_COOKIE_EXPIRY_RETRIES  = _s.get("alexa", {}).get("cookie_expiry_retries", 0)
 ALEXA_RETRY_INTERVAL_SECONDS = _s.get("alexa", {}).get("retry_interval_seconds", 30)
 ALEXA_AMAZON_DOMAIN          = _s.get("alexa", {}).get("amazon_domain", "amazon.com")
+MERGE_DUPLICATE_ITEMS        = _s.get("merge_duplicate_items", True)
 
 _SYNC_INTERVAL_FLOOR = 5
 if SYNC_INTERVAL_SECONDS < _SYNC_INTERVAL_FLOOR:
@@ -78,6 +79,9 @@ class UpdateLists:
                     with listLogContext(pair.get("name", pair["gkeep"]), max_bytes=LOG_MAX_BYTES, backup_count=LOG_BACKUP_COUNT):
                         a_list = deepcopy(self.Alexa.lists_and_items[pair["alexa"]])
                         g_list = deepcopy(self.googleKeep.lists_and_items[pair["gkeep"]])
+                        if MERGE_DUPLICATE_ITEMS:
+                            self._merge_duplicates(a_list, "Alexa")
+                            self._merge_duplicates(g_list, "GKeep")
                         self.syncBins(a_list, g_list, self.is_first_loop)
                         logger.debug("[%s] item counts after syncBins — GKeep: %d, Alexa: %d",
                                      pair.get("name", pair["gkeep"]), len(g_list.items), len(a_list.items))
@@ -109,6 +113,37 @@ class UpdateLists:
                 print(f"Waiting for {i} seconds...", end="\r", flush=True)
                 time.sleep(1)
             logger.info("Iteration #%d complete in %.2fs", count_n, elapsed)
+
+    def _merge_duplicates(self, lst: List, side: str) -> None:
+        """Collapse duplicate items (same itemIdentityKey) into one, summing explicit quantities.
+
+        Keeps the most recently updated copy. If all copies have no quantity, the merged item
+        also has no quantity. If any copy is unchecked, the merged item is unchecked.
+        """
+        groups: dict[str, list] = {}
+        for item in lst.items:
+            groups.setdefault(item.itemIdentityKey, []).append(item)
+        for dupes in groups.values():
+            if len(dupes) <= 1:
+                continue
+            primary = max(dupes, key=lambda i: i.updatedTime.timestamp() if i.updatedTime else 0)
+            all_none = all(i.quantity is None for i in dupes)
+            if all_none:
+                merged_qty = None
+            else:
+                total = sum((i.quantity or 1) for i in dupes)
+                merged_qty = min(total, 999) if total > 1 else None
+            any_unchecked = any(not i.checked for i in dupes)
+            logger.warning(
+                "[MERGE DUPLICATES] %s '%s' — %d copies merged into qty=%s",
+                side, primary.itemName, len(dupes), merged_qty,
+            )
+            for dupe in dupes:
+                if dupe is not primary:
+                    lst.remove(dupe)
+            primary.quantity = merged_qty
+            if any_unchecked:
+                primary.checked = False
 
     def syncBins(self, alexa_bin: List, gkeep_bin: List, first_run: bool) -> None:
         """First run: match items by normalised name and assign shared IDs.

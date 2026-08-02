@@ -6,6 +6,7 @@ clear_on_interval      = true   # clear checked items from all lists every clear
 clear_interval_seconds = 3600   # how often (in seconds) to clear checked items (default: 3600)
 max_iterations         = 0      # max sync cycles to run; 0 = run indefinitely (default: 0)
 sync_interval_seconds  = 20     # seconds to wait between sync iterations (default: 20, recommended: 20+, floor: 5)
+merge_duplicate_items  = true   # merge duplicate item names on either side into one, summing quantities (default: true)
 
 log_to_console         = true   # print log output to the terminal (default: true)
 log_to_file            = true   # write log output to logs/gkeepalexa.log (default: true)
