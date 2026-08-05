@@ -201,10 +201,7 @@ class UpdateLists:
                     _new_item.updatedTime = gkeep_item.updatedTime
                     _new_item.resolvedTime = gkeep_item.updatedTime
                     _new_item.indented = gkeep_item.indented
-                    if any(i.itemIdentityKey == _new_item.itemIdentityKey for i in alexa_bin.items):
-                        logger.warning("[DUPLICATE SKIPPED] '%s' already in Alexa bin — not copying from GKeep", _new_item.itemName)
-                    else:
-                        alexa_bin.add(_new_item)
+                    alexa_bin.add(_new_item)
                 elif not gkeep_item and alexa_item:
                     alexa_item.id = ListItem.generateId()
                     _new_item = ListItem()
@@ -217,10 +214,7 @@ class UpdateLists:
                     _new_item.updatedTime = alexa_item.updatedTime
                     _new_item.resolvedTime = alexa_item.updatedTime
                     _new_item.indented = alexa_item.indented
-                    if any(i.itemIdentityKey == _new_item.itemIdentityKey for i in gkeep_bin.items):
-                        logger.warning("[DUPLICATE SKIPPED] '%s' already in GKeep bin — not copying from Alexa", _new_item.itemName)
-                    else:
-                        gkeep_bin.add(_new_item)
+                    gkeep_bin.add(_new_item)
                 elif alexa_item and gkeep_item:
                     alexa_item.id = gkeep_item.id = ListItem.generateId()
                     if not alexa_item == gkeep_item:
@@ -267,10 +261,7 @@ class UpdateLists:
                     _new_item.resolvedTime = gkeep_item.updatedTime
                     _new_item.parentItemName = gkeep_item.parentItemName
                     _new_item.indented = gkeep_item.indented
-                    if any(i.itemIdentityKey == _new_item.itemIdentityKey for i in alexa_bin.items):
-                        logger.warning("[DUPLICATE SKIPPED] '%s' already in Alexa bin (ID: %s) — not copying from GKeep", _new_item.itemName, item_id)
-                    else:
-                        alexa_bin.add(_new_item)
+                    alexa_bin.add(_new_item)
                 elif not gkeep_item and alexa_item:
                     _new_item = ListItem()
                     _new_item.itemName = alexa_item.itemName
@@ -281,10 +272,7 @@ class UpdateLists:
                     _new_item.resolvedTime = alexa_item.updatedTime
                     _new_item.parentItemName = alexa_item.parentItemName
                     _new_item.indented = alexa_item.indented
-                    if any(i.itemIdentityKey == _new_item.itemIdentityKey for i in gkeep_bin.items):
-                        logger.warning("[DUPLICATE SKIPPED] '%s' already in GKeep bin (ID: %s) — not copying from Alexa", _new_item.itemName, item_id)
-                    else:
-                        gkeep_bin.add(_new_item)
+                    gkeep_bin.add(_new_item)
                 elif alexa_item and gkeep_item:
                     if not alexa_item == gkeep_item:
                         a_t = alexa_item.updatedTime
