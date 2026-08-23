@@ -14,6 +14,8 @@ _QTY_PREFIX_PAREN = re.compile(r'^\((\d+)\)\s*(.+)$')         # (4) Potatoes
 class Element:
     """Base class providing a shared ID and created/updated timestamps."""
 
+    __slots__ = ("_id", "_internal_id", "_createdTime", "_updatedTime")
+
     @classmethod
     def generateId(cls) -> str:
         return "{:04x}-{:04x}-{:04x}-{:012x}".format(
@@ -68,6 +70,8 @@ class Element:
 
 class List(Element):
     """Shared list data model used by both AlexaLists and GoogleKeepLists."""
+
+    __slots__ = ("name", "itemsList_d", "_type", "_resolvedTime")
 
     def __init__(self, name: str) -> None:
         self.name = name
@@ -277,6 +281,12 @@ class List(Element):
 
 class ListItem(Element):
     """Shared item data model used by both AlexaLists and GoogleKeepLists."""
+
+    __slots__ = (
+        "_itemName", "_parent_item_name", "_parent_id", "_internal_parent_id",
+        "_is_parent", "_indented", "_checked", "_resolvedTime",
+        "_version", "_children", "_quantity",
+    )
 
     def __init__(self) -> None:
         self._itemName = ""
