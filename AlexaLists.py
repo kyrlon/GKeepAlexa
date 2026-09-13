@@ -223,7 +223,7 @@ class AlexaLists:
             raise ConnectionError("sync returned no lists — skipping iteration")
         self.searched_alexa_lists = {}
         for _alist in search_list:
-            self.searched_alexa_lists[_alist.name] = _alist
+            self.searched_alexa_lists[_alist.listName] = _alist
 
 if __name__ == "__main__":
     obj = AlexaLists()
