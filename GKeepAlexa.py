@@ -101,9 +101,9 @@ class UpdateLists:
                     with listLogContext(pair.get("name", pair["gkeep"]), max_bytes=LOG_MAX_BYTES, backup_count=LOG_BACKUP_COUNT):
                         a_list = deepcopy(self.Alexa.lists_and_items[pair["alexa"]])
                         g_list = deepcopy(self.googleKeep.lists_and_items[pair["gkeep"]])
-                        if MERGE_DUPLICATE_ITEMS:
-                            self._merge_duplicates(a_list, "Alexa")
-                            self._merge_duplicates(g_list, "GKeep")
+                        # if MERGE_DUPLICATE_ITEMS:
+                        #     self._merge_duplicates(a_list, "Alexa")
+                        #     self._merge_duplicates(g_list, "GKeep")
                         self.syncBins(a_list, g_list, self.is_first_loop)
                         logger.debug("[%s] item counts after syncBins — GKeep: %d, Alexa: %d",
                                      pair.get("name", pair["gkeep"]), len(g_list.items), len(a_list.items))
