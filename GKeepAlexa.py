@@ -99,6 +99,12 @@ class UpdateLists:
 
                 for pair in LIST_PAIRS:
                     with listLogContext(pair.get("name", pair["gkeep"]), max_bytes=LOG_MAX_BYTES, backup_count=LOG_BACKUP_COUNT):
+                        if pair["alexa"] not in self.Alexa.searched_alexa_lists:
+                            logger.warning(
+                                "Alexa list '%s' not found in active lists — archived or deleted? Skipping",
+                                pair["alexa"],
+                            )
+                            continue
                         a_list = deepcopy(self.Alexa.lists_and_items[pair["alexa"]])
                         g_list = deepcopy(self.googleKeep.lists_and_items[pair["gkeep"]])
                         # if MERGE_DUPLICATE_ITEMS:

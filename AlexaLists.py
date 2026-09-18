@@ -214,10 +214,8 @@ class AlexaLists:
 
 
     def alexaListSearch(self) -> None:
-        """Rebuild searched_alexa_lists from a fresh pyalexalist.all() fetch."""
-        #TODO exclude archives?
+        """Rebuild searched_alexa_lists from current pyalexalist state, excluding archived lists."""
         kwargs = {"archived": False}
-        # search_list = self.pyalexalist.all()
         search_list = list(self.pyalexalist.find(**kwargs))
         if not search_list:
             raise ConnectionError("sync returned no lists — skipping iteration")
