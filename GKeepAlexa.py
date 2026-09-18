@@ -147,7 +147,11 @@ class UpdateLists:
 
         Keeps the most recently updated copy. If all copies have no quantity, the merged item
         also has no quantity. If any copy is unchecked, the merged item is unchecked.
+        Only runs on lists that support quantities; logs a debug message and returns otherwise.
         """
+        if not lst.supportsQuantity:
+            logger.debug("[MERGE DUPLICATES] skipping '%s' (%s) — list does not support quantities", lst.name, side)
+            return
         groups: dict[str, list] = {}
         for item in lst.items:
             groups.setdefault(item.itemIdentityKey, []).append(item)
