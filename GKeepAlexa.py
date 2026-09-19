@@ -23,17 +23,47 @@ _SERVICE_AUTH_PATH = Path(__file__).parent / "config" / "service_auth.json"
 _LOCK_FILE         = Path(__file__).parent / "gkeepalexa.pid"
 
 
+def _pid_exists(pid: int) -> bool:
+    """Return True if a process with this PID is currently running.
+
+    Uses ctypes on Windows because os.kill(pid, 0) on Windows does not
+    probe existence — it calls TerminateProcess and actually kills the process.
+    Falls back to os.kill(pid, 0) on POSIX where signal 0 is a safe existence check.
+    """
+    if os.name == "nt":
+        import ctypes
+        _PROCESS_QUERY_LIMITED_INFORMATION = 0x1000
+        _STILL_ACTIVE = 259
+        handle = ctypes.windll.kernel32.OpenProcess(_PROCESS_QUERY_LIMITED_INFORMATION, False, pid)
+        if not handle:
+            return False
+        try:
+            exit_code = ctypes.c_ulong()
+            if ctypes.windll.kernel32.GetExitCodeProcess(handle, ctypes.byref(exit_code)):
+                return exit_code.value == _STILL_ACTIVE
+            return False
+        finally:
+            ctypes.windll.kernel32.CloseHandle(handle)
+    else:
+        try:
+            os.kill(pid, 0)
+            return True
+        except OSError:
+            return False
+
+
 def _acquire_lock() -> None:
     if _LOCK_FILE.exists():
         try:
             pid = int(_LOCK_FILE.read_text().strip())
-            os.kill(pid, 0)
-            raise SystemExit(
-                f"ERROR: Another GKeepAlexa instance appears to be running (PID {pid}).\n"
-                f"       If this is stale, delete: {_LOCK_FILE}"
-            )
-        except (OSError, ValueError):
-            pass  # stale lock — process gone or file unreadable
+            if _pid_exists(pid):
+                raise SystemExit(
+                    f"ERROR: Another GKeepAlexa instance appears to be running (PID {pid}).\n"
+                    f"       If this is stale, delete: {_LOCK_FILE}"
+                )
+            # pid not running — stale lock, overwrite below
+        except ValueError:
+            pass  # unreadable PID in lock file — treat as stale
     _LOCK_FILE.write_text(str(os.getpid()))
     atexit.register(_release_lock)
 
@@ -107,9 +137,9 @@ class UpdateLists:
                             continue
                         a_list = deepcopy(self.Alexa.lists_and_items[pair["alexa"]])
                         g_list = deepcopy(self.googleKeep.lists_and_items[pair["gkeep"]])
-                        # if MERGE_DUPLICATE_ITEMS:
-                        #     self._merge_duplicates(a_list, "Alexa")
-                        #     self._merge_duplicates(g_list, "GKeep")
+                        if MERGE_DUPLICATE_ITEMS:
+                            self._merge_duplicates(a_list, "Alexa")
+                            self._merge_duplicates(g_list, "GKeep")
                         self.syncBins(a_list, g_list, self.is_first_loop)
                         logger.debug("[%s] item counts after syncBins — GKeep: %d, Alexa: %d",
                                      pair.get("name", pair["gkeep"]), len(g_list.items), len(a_list.items))
