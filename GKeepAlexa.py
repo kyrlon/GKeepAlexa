@@ -138,9 +138,9 @@ class UpdateLists:
                             continue
                         a_list = deepcopy(self.Alexa.lists_and_items[pair["alexa"]])
                         g_list = deepcopy(self.googleKeep.lists_and_items[pair["gkeep"]])
-                        if MERGE_DUPLICATE_ITEMS:
-                            self._merge_duplicates(a_list, "Alexa")
-                            self._merge_duplicates(g_list, "GKeep")
+                        # if MERGE_DUPLICATE_ITEMS: TODO maybe?
+                        #     self._merge_open_duplicates(a_list, "Alexa")
+                        #     self._merge_open_duplicates(g_list, "GKeep")
                         self.syncBins(a_list, g_list, self.is_first_loop)
                         logger.debug("[%s] item counts after syncBins — GKeep: %d, Alexa: %d",
                                      pair.get("name", pair["gkeep"]), len(g_list.items), len(a_list.items))
@@ -173,11 +173,11 @@ class UpdateLists:
                 time.sleep(1)
             logger.info("Iteration #%d complete in %.2fs", count_n, elapsed)
 
-    def _merge_duplicates(self, lst: List, side: str) -> None:
-        """Collapse duplicate items (same itemIdentityKey) into one, summing explicit quantities.
+    def _merge_open_duplicates(self, lst: List, side: str) -> None:
+        """Collapse unchecked duplicate items (same itemIdentityKey) into one, summing explicit quantities.
 
-        Keeps the most recently updated copy. If all copies have no quantity, the merged item
-        also has no quantity. If any copy is unchecked, the merged item is unchecked.
+        Checked items are left untouched. Among the unchecked duplicates, keeps the most recently
+        updated copy. If all copies have no quantity, the merged item also has no quantity.
         Only runs on lists that support quantities; logs a debug message and returns otherwise.
         """
         if not lst.supportsQuantity:
@@ -185,6 +185,8 @@ class UpdateLists:
             return
         groups: dict[str, list] = {}
         for item in lst.items:
+            if item.checked:
+                continue
             groups.setdefault(item.itemIdentityKey, []).append(item)
         for dupes in groups.values():
             if len(dupes) <= 1:
@@ -196,7 +198,6 @@ class UpdateLists:
             else:
                 total = sum((i.quantity or 1) for i in dupes)
                 merged_qty = min(total, 999) if total > 1 else None
-            any_unchecked = any(not i.checked for i in dupes)
             logger.warning(
                 "[MERGE DUPLICATES] %s '%s' — %d copies merged into qty=%s",
                 side, primary.itemName, len(dupes), merged_qty,
@@ -205,8 +206,6 @@ class UpdateLists:
                 if dupe is not primary:
                     lst.remove(dupe)
             primary.quantity = merged_qty
-            if any_unchecked:
-                primary.checked = False
 
     def syncBins(self, alexa_bin: List, gkeep_bin: List, first_run: bool) -> None:
         """First run: match items by normalised name and assign shared IDs.
