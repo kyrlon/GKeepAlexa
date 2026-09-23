@@ -9,6 +9,7 @@ except ImportError:
 from copy import deepcopy
 from pathlib import Path
 
+from gkeepapi.exception import LoginException as GKeepLoginException
 from requests.exceptions import ConnectionError as RequestsConnectionError
 
 from GoogleKeepLists import GoogleKeepLists
@@ -161,8 +162,8 @@ class UpdateLists:
 
                 elapsed = timeit.default_timer() - start_time
                 count_n += 1
-            except (RequestsConnectionError, ConnectionError) as e:
-                logger.warning("Network error — skipping iteration, will retry: %s", e)
+            except (RequestsConnectionError, ConnectionError, GKeepLoginException) as e:
+                logger.warning("Network/auth error — skipping iteration, will retry: %s", e)
                 elapsed = timeit.default_timer() - start_time
             finally:
                 self.is_first_loop = False
