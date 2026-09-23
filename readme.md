@@ -151,6 +151,12 @@ log_to_console         = true   # print log output to the terminal (default: tru
 log_to_file            = true   # write log output to logs/gkeepalexa.log (default: true)
 log_level              = "INFO" # console verbosity: DEBUG, INFO, WARNING, ERROR (default: INFO)
 
+[settings.alexa]
+amazon_domain          = "amazon.com"  # your Amazon storefront domain (default: amazon.com)
+cookie_expiry_retries  = 0             # retries after cookie expiration (default: 0 — raise immediately)
+retry_interval_seconds = 30            # seconds between retries while cookies are refreshed (default: 30)
+exhaustive_fetch_lists = ["SHOP"]      # lists to fetch items extensively (default: [] — disabled)
+
 [settings.gkeep]
 pinned_only             = true   # true = only sync pinned Google Keep notes; false = sync all notes (default: true)
 sort                    = "none" # item sort order applied to all lists — takes effect next iteration (default: none)

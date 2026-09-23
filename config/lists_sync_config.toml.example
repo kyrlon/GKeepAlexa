@@ -22,6 +22,7 @@ amazon_domain          = "amazon.com"  # default: amazon.com — other supported
                                        # amazon.com.br, amazon.com.mx
 cookie_expiry_retries  = 0   # operation retries after cookie expiration (default: 0 — raise immediately)
 retry_interval_seconds = 30  # seconds to wait between retries while user refreshes cookies (default: 30)
+exhaustive_fetch_lists = ["SHOP"] # lists to fetch items extensively (default: [] — disabled)
 
 [settings.gkeep]
 pinned_only             = true   # true = only sync pinned Google Keep notes; false = sync all notes (default: true)

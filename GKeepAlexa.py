@@ -90,6 +90,7 @@ LOG_BACKUP_COUNT             = _s.get("log_backup_count", 5)
 ALEXA_COOKIE_EXPIRY_RETRIES  = _s.get("alexa", {}).get("cookie_expiry_retries", 0)
 ALEXA_RETRY_INTERVAL_SECONDS = _s.get("alexa", {}).get("retry_interval_seconds", 30)
 ALEXA_AMAZON_DOMAIN          = _s.get("alexa", {}).get("amazon_domain", "amazon.com")
+ALEXA_EXHAUSTIVE_FETCH_LISTS = set(_s.get("alexa", {}).get("exhaustive_fetch_lists", []))
 MERGE_DUPLICATE_ITEMS        = _s.get("merge_duplicate_items", True)
 
 _SYNC_INTERVAL_FLOOR = 5
@@ -107,7 +108,7 @@ class UpdateLists:
 
     def __init__(self) -> None:
         self.googleKeep = GoogleKeepLists(pinned_only=GKEEP_PINNED_ONLY, sort_map=GKEEP_SORT_MAP, normalize_quantity_text=GKEEP_NORMALIZE_QUANTITY_TEXT)
-        self.Alexa = AlexaLists(cookie_expiry_retries=ALEXA_COOKIE_EXPIRY_RETRIES, retry_interval_seconds=ALEXA_RETRY_INTERVAL_SECONDS, amazon_domain=ALEXA_AMAZON_DOMAIN, service_auth_path=_SERVICE_AUTH_PATH)
+        self.Alexa = AlexaLists(cookie_expiry_retries=ALEXA_COOKIE_EXPIRY_RETRIES, retry_interval_seconds=ALEXA_RETRY_INTERVAL_SECONDS, amazon_domain=ALEXA_AMAZON_DOMAIN, service_auth_path=_SERVICE_AUTH_PATH, exhaustive_fetch_lists=ALEXA_EXHAUSTIVE_FETCH_LISTS)
         self.googleKeep.getCurrentListsItems(resync=True)
         self.Alexa.getCurrentListsItems()
         self.is_first_loop = True

@@ -10,15 +10,16 @@ logger = logging.getLogger(__name__)
 class AlexaLists:
     """Bridges pyalexalist and list_structures — maps Alexa server state to local List/ListItem objects."""
 
-    def __init__(self, cookie_expiry_retries: int = 0, retry_interval_seconds: int = 30, amazon_domain: str = "amazon.com", service_auth_path: "Path | None" = None) -> None:
+    def __init__(self, cookie_expiry_retries: int = 0, retry_interval_seconds: int = 30, amazon_domain: str = "amazon.com", service_auth_path: "Path | None" = None, exhaustive_fetch_lists: "set[str]" = frozenset()) -> None:
         self.pyalexalist = pyalexalist.AlexaList(cookie_expiry_retries=cookie_expiry_retries, retry_interval_seconds=retry_interval_seconds, amazon_domain=amazon_domain, service_auth_path=service_auth_path)
+        self.exhaustive_fetch_lists = exhaustive_fetch_lists
         self.lists_and_items = {}
         self.searched_alexa_lists = {}
 
     def getCurrentListsItems(self) -> None:
         """Fetch current Alexa lists server state and merge into lists_and_items, deferring bracket-prefixed children."""
         deferred_orphaned_items_list = []
-        self.pyalexalist.pull()
+        self.pyalexalist.pull(exhaustive=self.exhaustive_fetch_lists or False)
         self.alexaListSearch()
         
         for name_of_list, alexa_lst in self.searched_alexa_lists.items():
