@@ -144,12 +144,16 @@ Edit `config/lists_sync_config.toml` to set which lists to sync and control sync
 clear_on_startup       = true   # clear checked items from all lists when the process starts (default: true)
 clear_on_interval      = true   # clear checked items from all lists every clear_interval_seconds (default: true)
 clear_interval_seconds = 3600   # how often (in seconds) to clear checked items (default: 3600)
+reset_clear_timer_on_modification = false  # reset the clear interval timer whenever a sync change is detected (default: false)
 max_iterations         = 0      # max sync cycles to run; 0 = run indefinitely (default: 0)
 sync_interval_seconds  = 20     # seconds to wait between sync iterations (default: 20, recommended: 20+, floor: 5)
 
 log_to_console         = true   # print log output to the terminal (default: true)
 log_to_file            = true   # write log output to logs/gkeepalexa.log (default: true)
 log_level              = "INFO" # console verbosity: DEBUG, INFO, WARNING, ERROR (default: INFO)
+log_file_level         = "DEBUG" # file verbosity: DEBUG, INFO, WARNING, ERROR (default: DEBUG)
+log_max_bytes          = 5242880 # max log file size in bytes before rotation (default: 5 MB)
+log_backup_count       = 5       # number of rotated log files to keep (default: 5)
 
 [settings.alexa]
 amazon_domain          = "amazon.com"  # your Amazon storefront domain (default: amazon.com)
@@ -225,3 +229,10 @@ Quantities of 1 or less are treated as no quantity — the suffix is omitted and
 ```
 python GKeepAlexa.py
 ```
+
+---
+
+## TODOs
+
+- **GKeep list size cap** — config option to limit the maximum number of items synced from a Google Keep note, preventing unbounded list growth.
+- **Merge duplicates** — automatically merge items with the same name on either side into one entry, summing quantities. The `merge_duplicate_items` config key is reserved for this; the feature is not yet active.

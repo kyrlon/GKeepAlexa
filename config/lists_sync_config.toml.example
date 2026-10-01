@@ -4,6 +4,7 @@
 clear_on_startup       = true   # clear checked items from all lists when the process starts (default: true)
 clear_on_interval      = true   # clear checked items from all lists every clear_interval_seconds (default: true)
 clear_interval_seconds = 3600   # how often (in seconds) to clear checked items (default: 3600)
+reset_clear_timer_on_modification = false  # reset the clear interval timer whenever a sync change is detected (default: false)
 max_iterations         = 0      # max sync cycles to run; 0 = run indefinitely (default: 0)
 sync_interval_seconds  = 20     # seconds to wait between sync iterations (default: 20, recommended: 20+, floor: 5)
 merge_duplicate_items  = true   # merge duplicate item names on either side into one, summing quantities (default: true)
