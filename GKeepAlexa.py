@@ -79,6 +79,7 @@ _s = _config.get("settings", {})
 CLEAR_ON_STARTUP       = _s.get("clear_on_startup", True)
 CLEAR_ON_INTERVAL      = _s.get("clear_on_interval", True)
 CLEAR_INTERVAL_SECONDS = _s.get("clear_interval_seconds", 3600)
+RESET_CLEAR_TIMER_ON_MODIFICATION = _s.get("reset_clear_timer_on_modification", False)
 MAX_ITERATIONS         = _s.get("max_iterations", 0)
 SYNC_INTERVAL_SECONDS  = _s.get("sync_interval_seconds", 20)
 GKEEP_PINNED_ONLY              = _s.get("gkeep", {}).get("pinned_only", True)
@@ -113,6 +114,7 @@ class UpdateLists:
         self.googleKeep.getCurrentListsItems(resync=True)
         self.Alexa.getCurrentListsItems()
         self.is_first_loop = True
+        self.modified_this_pass = False
 
     def updatingLists(self, max_count: int | float = float("inf")) -> None:
         """Run the sync loop indefinitely (or up to max_count iterations).
@@ -121,7 +123,7 @@ class UpdateLists:
             max_count: Maximum number of sync iterations; defaults to infinity.
         """
         count_n = 0
-        t0_ = time.time()
+        _t0 = time.time()
         while max_count > count_n:
             start_time = timeit.default_timer()
             try:
@@ -153,11 +155,15 @@ class UpdateLists:
                         self.Alexa.clearDoneCompleted(pair["alexa"])
                         self.googleKeep.clearDoneCompleted(pair["gkeep"])
 
-                if CLEAR_ON_INTERVAL and time.time() > t0_ + CLEAR_INTERVAL_SECONDS:
+                if RESET_CLEAR_TIMER_ON_MODIFICATION and self.modified_this_pass:
+                    _t0 = time.time()
+
+                if CLEAR_ON_INTERVAL and time.time() > _t0 + CLEAR_INTERVAL_SECONDS:
                     for pair in LIST_PAIRS:
                         self.Alexa.clearDoneCompleted(pair["alexa"])
                         self.googleKeep.clearDoneCompleted(pair["gkeep"])
-                    t0_ = time.time()
+                    _t0 = time.time()
+                    self.modified_this_pass = False
                     logger.info("Cleared completed items from all lists")
 
                 elapsed = timeit.default_timer() - start_time
@@ -217,6 +223,8 @@ class UpdateLists:
             gkeep_bin: Deep-copied GKeep List for this sync pass.
             first_run: If True, match items by identity key; otherwise match by shared ID.
         """
+        self.modified_this_pass = True  # Assume out of sync until proven otherwise; set False below when all items are already in sync with no modifications
+
         alexa_bin.cascadeParentToChildren()
         if first_run:
             alexa_bin.id = gkeep_bin.id = List.generateId()
@@ -284,6 +292,7 @@ class UpdateLists:
                     else:
                         #using Alexa's timestamp as resolvedTime for sort ording for Gkeep later
                         gkeep_item.resolvedTime = alexa_item.updatedTime
+                        self.modified_this_pass = False
         else:
 
             all_item_ids = set(alexa_bin.idsOfItems) | set(gkeep_bin.idsOfItems)
@@ -354,7 +363,9 @@ class UpdateLists:
                             winner, reason,
                         )
                     else:
+                        self.modified_this_pass = False
                         continue
+
         alexa_bin.propagateParentChecks()
         gkeep_bin.propagateParentChecks()
         alexa_bin.resolveParentIds()
